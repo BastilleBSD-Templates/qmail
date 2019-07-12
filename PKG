@@ -1,0 +1,13 @@
+perl5
+unzip
+curl
+wget
+portdowngrade
+qmail
+ucspi-tcp
+daemontools
+autorespond
+ezmlm-idx
+vpopmail
+maildrop
+

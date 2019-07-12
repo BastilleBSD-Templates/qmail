@@ -1,0 +1,81 @@
+pw groupadd nofiles
+pw groupadd vchkpw -g 89
+pw groupadd qscand
+pw useradd vpopmail -u 89 -g vchkpw -m -d /usr/home/vpopmail -s /sbin/nologin
+pw useradd qscand -s /sbin/nologin -d /tmp
+mkdir /var/log/qmail
+mkdir /var/log/qmail/qmail-send /var/log/qmail/dovecot /var/log/qmail/qmail-smtpd /var/log/qmail/qmail-smtpd-ssl /var/log/qmail/qmail-smtpd-tls /var/log/qmail/qmail-scanner
+chown -R qmaill:wheel /var/log/qmail
+chmod -R 750 /var/log/qmail
+mkdir -p /var/qmail/supervise
+mkdir /var/qmail/supervise/qmail-smtpd /var/qmail/supervise/qmail-send /var/qmail/supervise/qmail-smtpd-ssl /var/qmail/supervise/qmail-smtpd-ssl/log/ /var/qmail/supervise/qmail-pop3d /var/qmail/supervise/qmail-pop3d/log /var/qmail/supervise/dovecot /var/qmail/supervise/qmail-smtpd/log /var/qmail/supervise/qmail-send/log /var/qmail/supervise/qmail-smtpd-tls /var/qmail/supervise/qmail-smtpd-tls/log/
+chmod +t /var/qmail/supervise/qmail-smtpd /var/qmail/supervise/qmail-send /var/qmail/supervise/qmail-pop3d /var/qmail/supervise/qmail-smtpd-ssl /var/qmail/supervise/qmail-smtpd-tls /var/qmail/supervise/dovecot
+
+cd /var/qmail/bin
+fetch http://www.xfiles.dk/content/files/freebsd-qmail/qmail-bin.tgz
+tar zxvf qmail-bin.tgz
+rm qmail-bin.tgz
+cd /var/qmail/queue
+touch /var/qmail/queue/lock/sendmutex
+chown qmails:qmail /var/qmail/queue/lock/sendmutex
+
+mkdir /service
+csh -cf '/usr/local/bin/svscanboot &'
+echo "csh -cf '/usr/local/bin/svscanboot &'" >> /etc/rc.local
+rm /usr/local/etc/rc.d/svscan
+
+cp /usr/local/etc/ezmlm/ezmlmglrc.sample /usr/local/etc/ezmlm/ezmlmglrc
+cp /usr/local/etc/ezmlm/ezmlmrc.sample /usr/local/etc/ezmlm/ezmlmrc
+cp /usr/local/etc/ezmlm/ezmlmsubrc.sample /usr/local/etc/ezmlm/ezmlmsubrc
+
+cd /var/qmail/supervise
+mkdir -m 1755 qmail-updater
+mkdir -m 755 qmail-updater/log
+mkdir /var/log/qmail/qmail-updater
+cd qmail-updater/log
+fetch http://www.xfiles.dk/content/files/freebsd-qmail/vpopmail-run
+mv vpopmail-run run
+chmod 755 run
+
+cd /var/qmail/supervise/qmail-updater
+fetch http://www.xfiles.dk/content/files/freebsd-qmail/pipe-watcher
+fetch http://www.xfiles.dk/content/files/freebsd-qmail/update-qmail
+fetch http://www.xfiles.dk/content/files/freebsd-qmail/update-qmail-service
+mv update-qmail-service run
+chmod 755 pipe-watcher update-qmail run
+
+ln -s /var/qmail/supervise/qmail-updater /service/
+
+cd ~vpopmail/bin
+./vadddomain domain.com password
+
+cd ~vpopmail/bin
+chmod 6711 vchkpw
+chown vpopmail:vchkpw vchkpw
+
+cpan -i CDB_File
+
+cd /usr/local/bin
+fetch http://www.xfiles.dk/content/files/freebsd-qmail/mkvalidrcptto
+chmod 755 mkvalidrcptto
+
+cd /var/qmail/control
+mkvalidrcptto -c validrcptto.cdb
+
+killall sendmail
+mv /usr/sbin/sendmail /usr/sbin/sendmail.old
+chmod 0 /usr/sbin/sendmail.old
+echo "sendmail_enable=NONE" >> /etc/rc.conf
+echo "sendmail_submit_enable=NO" >> /etc/rc.conf
+echo "sendmail_outbound_enable=NO" >> /etc/rc.conf
+echo "sendmail_msp_queue_enable=NO" >> /etc/rc.conf
+echo "NO_SENDMAIL=yes" >> /etc/make.conf
+echo "NO_MAILWRAPPER=yes" >> /etc/make.conf
+ln -s /var/qmail/bin/sendmail /usr/sbin/sendmail
+ln -s /var/qmail/bin/sendmail /usr/lib/sendmail
+
+cd /root
+rm -R qmail
+
+DONE!!  restart jail and all should be running.
+

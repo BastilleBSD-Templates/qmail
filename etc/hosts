@@ -1,0 +1,8 @@
+::1                localhost localhost.yourdomain.xyz
+127.0.0.1          localhost localhost.yourdomain.xyz
+# This Host
+xxx.xxx.xxx.xxx    domain
+xxx.xxx.xxx.xxx    domain.xyz
+xxx.xxx.xxx.xxx    domain.xyz.
+
+
