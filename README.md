@@ -1,6 +1,7 @@
 # qmail
 Bastille Template for a simple one domain Qmail Mail Server
 
+ STATUS: Testing
 
 Last configuration steps
 
